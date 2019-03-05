@@ -1,0 +1,137 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+>
+<!--
+  ==================================================
+    Demo MBTA API Client - Maven Project 
+  ==================================================
+  Usage:
+    mvn clean
+    mvn package
+    java -jar ./target/mbta-client-0.0.1-SNAPSHOT.jar
+-->
+
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>org.broadinstitute.pcarr</groupId>
+  <artifactId>mbta-client</artifactId>
+  <version>0.1</version>
+  <packaging>jar</packaging>
+
+  <name>mbta-client</name>
+  <url>http://maven.apache.org</url>
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <jarName>${project.artifactId}-${project.version}</jarName>
+
+    <!-- command line execution -->
+    <mainClass>org.broadinstitute.pcarr.mbta_client.Main</mainClass>
+  </properties>
+
+  <build>
+    <plugins>
+          <!-- 
+        ==================================================
+          maven-shade-plugin
+        ==================================================
+        Create executable jar file including all library dependencies.
+        Use as an alternative to the maven-assembly-plugin
+        See:
+          https://maven.apache.org/plugins/maven-shade-plugin/
+          https://maven.apache.org/plugins/maven-shade-plugin/shade-mojo.html
+      -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-shade-plugin</artifactId>
+        <version>3.0.0</version>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>shade</goal>
+            </goals>
+            <configuration>
+              <!-- finalName>${jarName}-full</finalName -->
+              <transformers>
+                <!-- add Main-Class to manifest file -->
+                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                  <mainClass>${mainClass}</mainClass>
+                </transformer>
+              </transformers>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    
+    </plugins>
+  </build>
+
+  <dependencies>
+      <!-- https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-api -->
+      <dependency>
+          <groupId>org.apache.logging.log4j</groupId>
+          <artifactId>log4j-api</artifactId>
+          <version>2.8.2</version>
+      </dependency>
+    
+      <!-- https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-core -->
+      <dependency>
+          <groupId>org.apache.logging.log4j</groupId>
+          <artifactId>log4j-core</artifactId>
+          <version>2.8.2</version>
+      </dependency>
+
+      <!-- https://mvnrepository.com/artifact/com.google.guava/guava -->
+      <dependency>
+          <groupId>com.google.guava</groupId>
+          <artifactId>guava</artifactId>
+          <version>27.0.1-jre</version>
+      </dependency>
+  
+      <!-- https://mvnrepository.com/artifact/com.google.code.gson/gson -->
+      <dependency>
+          <groupId>com.google.code.gson</groupId>
+          <artifactId>gson</artifactId>
+          <version>2.8.5</version>
+      </dependency>
+
+      <!-- https://mvnrepository.com/artifact/org.apache.httpcomponents/httpclient -->
+      <dependency>
+          <groupId>org.apache.httpcomponents</groupId>
+          <artifactId>httpclient</artifactId>
+          <version>4.5.7</version>
+      </dependency>
+  
+      <!-- https://mvnrepository.com/artifact/io.crnk/crnk-client -->
+      <dependency>
+          <groupId>io.crnk</groupId>
+          <artifactId>crnk-client</artifactId>
+          <version>2.6.20180522184741</version>
+          <scope>test</scope>
+       </dependency>
+
+       <!-- https://mvnrepository.com/artifact/com.squareup.okhttp3/okhttp -->
+       <dependency>
+          <groupId>com.squareup.okhttp3</groupId>
+          <artifactId>okhttp</artifactId>
+          <version>3.13.1</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/io.crnk/crnk-core -->
+        <dependency>
+            <groupId>io.crnk</groupId>
+            <artifactId>crnk-core</artifactId>
+            <version>2.6.20180522184741</version>
+         </dependency>
+
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>3.8.1</version>
+      <scope>test</scope>
+    </dependency>
+
+  </dependencies>
+</project>
