@@ -1,2 +1,6 @@
-# ignore build output directory
+# ignore build outputs
 target/
+dependency-reduced-pom.xml
+
+# ignore runtime outputs
+logs/
