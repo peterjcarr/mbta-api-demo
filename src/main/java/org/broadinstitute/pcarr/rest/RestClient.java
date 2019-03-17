@@ -32,7 +32,25 @@ import com.google.gson.JsonParser;
  */
 public class RestClient {
     private static final Logger log = LogManager.getLogger(RestClient.class);
-    
+
+    /**
+     * Get a json entity from the endpoint.
+     */
+    public static final JsonObject getJson(final RestClient client, final String endpoint) {
+        JsonObject json=null;
+        try {
+            json=client.getJson(endpoint);
+            if (client.isVerbose()) {
+                System.out.println("Json response ...");
+                System.out.println(client.formatJson(json));
+            }
+        } 
+        catch (Exception e) {
+            System.err.println(e.getMessage());
+        }
+        return json;
+    }
+
     /**
      * Set Header for HTTP Basic Authentication.
      * Usage:
