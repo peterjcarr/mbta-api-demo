@@ -73,7 +73,6 @@ public class MbtaClient {
      *     curl -X GET "https://api-v3.mbta.com/routes?filter%5Btype%5D=0%2C1" -H "accept: application/vnd.api+json"
      */
     public static SortedSet<Route> initRoutes(final RestClient client, final boolean withStops, final boolean withConnections) {
-        //List<Route> routes=Lists.newArrayList();
         SortedSet<Route> routes=Sets.newTreeSet(Route.nameComparator);
         boolean includeRail=false;
 

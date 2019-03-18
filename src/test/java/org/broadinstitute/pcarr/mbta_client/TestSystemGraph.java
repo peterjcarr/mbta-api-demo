@@ -12,6 +12,7 @@ import java.util.Set;
 import org.broadinstitute.pcarr.rest.RestClient;
 import org.jgrapht.GraphPath;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.google.common.collect.ImmutableSet;
@@ -44,7 +45,7 @@ public class TestSystemGraph {
     } 
 
     public static Stop stop(final String name) {
-        final Stop stop=graph.nameToStop.get(name);
+        final Stop stop=graph.stop(name);
         assertNotNull("Invalid stop, name='"+name+"'", stop);
         return stop;
     }
@@ -54,7 +55,7 @@ public class TestSystemGraph {
         for(final String routeId : expectedRouteIds) {
             expected.add(route(routeId));
         }  
-        final List<Route> actualPath=graph.getShortestPathAsRoutes(stop(fromName), stop(toName));
+        final List<Route> actualPath=graph.listRoutesFrom(stop(fromName), stop(toName));
         assertEquals("getPath from '"+fromName+"' to '"+toName+"'", expected, actualPath);
     }
 
@@ -103,7 +104,7 @@ public class TestSystemGraph {
     
     @Test
     public void connectingRoutes() {
-        graph.printConnectingStops(System.out);
+        graph.printConnectingRoutes(System.out);
     }
     
     /** Which rail routes are connected? List the stops that connect them. */
@@ -169,21 +170,14 @@ public class TestSystemGraph {
         }
         System.out.println("    routes: "+routes);
 
-        List<Route> shortestRoute=graph.getShortestPathAsRoutes(stop(from), stop(to));
+        List<Route> shortestRoute=graph.listRoutesFrom(stop(from), stop(to));
         System.out.println("    shortestRoute: "+shortestRoute);
     }
     
-    @Test
+    // for debugging, remove the '@Ignore' to run this test
+    @Ignore @Test
     public void allRoutes() {
-        for(final Stop from : graph.getStops()) {
-            for(final Stop to : graph.getStops()) {
-                System.out.println("computing shortest path from "+from+" to "+to+" ... ");
-                if (!from.equals(to)) {
-                    List<Route> path=graph.getShortestPathAsRoutes(from, to);
-                    System.out.println("    "+path);
-                }
-            }
-        } 
+        graph.printAllRoutesFromAllStops(System.out);
     }
 
 }

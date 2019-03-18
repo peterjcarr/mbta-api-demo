@@ -1,7 +1,5 @@
 package org.broadinstitute.pcarr.mbta_client;
 
-import static org.junit.Assert.assertNotNull;
-
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -48,13 +46,12 @@ public class SystemGraph {
     protected Set<Route> shortestRoutes;
 
     private Graph<Stop, RouteEdge> graph;
-    
-    // builder pseudo pattern
-    private RestClient client;
 
     public SystemGraph() {
     }
-    
+
+    // builder pattern
+    private RestClient client;
     public SystemGraph withClient(final RestClient client) {
         this.client=client;
         return this;
@@ -107,11 +104,6 @@ public class SystemGraph {
                 }
             }
         }
-
-        //   (2) Write a program that writes these questions and their answers to the console:
-        //      a) Which rail route has the most stops? 
-        //      b) Which rail route has the fewest stops?  
-        //      c) Which rail routes are connected? List the stops that connect them.
 
         // record longest and shortest routes
         int max=0;
@@ -175,6 +167,11 @@ public class SystemGraph {
         return ImmutableSet.copyOf(graph.vertexSet());
     }
 
+    /** get the Stop by name, or null if no matching stop is found */
+    public Stop stop(final String name) {
+        return nameToStop.get(name);
+    }
+
     /**
      * get the long names of all of the routes
      */
@@ -200,21 +197,13 @@ public class SystemGraph {
         return ImmutableSet.copyOf(shortestRoutes);
     }
 
-    public void printConnectingStops(final PrintStream out) {
-        //find all the stops that have more than one route
-        out.println("Q: Which rail routes are connected?");
-        out.println("A: {routeId} is connected to [{routeId_1}, ... {routeId_N}");
-        for(final Entry<Route,Collection<Route>> e : routeConnections.asMap().entrySet()) {
-            out.println("    "+e.getKey()+" is connected to "+e.getValue());
-        }
-        
-        out.println("A: There are {N} connections at {stop} : {routeIds}...");
-        for(final Stop stop : stops.values()) {
-            final Set<Route> routes=stop.getRoutes();
-            if (stop.getRoutes().size()>1) {
-                out.println("    There are "+routes.size()+" connections at stopId="+stop.getId()+", "+stop.getName()+" : "+routes);
-            }
-        }
+    /**
+     * Get a map of connecting routes. Each route (the key) is
+     * connected to one or more other routes (the value).
+     *   route -> list of connected routes
+     */
+    public Map<Route,Collection<Route>> getRouteConnections() {
+        return routeConnections.asMap();
     }
 
     protected GraphPath<Stop, RouteEdge> getGraphPath(final Stop from, final Stop to) {
@@ -223,13 +212,43 @@ public class SystemGraph {
         SingleSourcePaths<Stop, RouteEdge> iPaths = dijkstraAlg.getPaths(from);
         return iPaths.getPath(to);
     }
-    
-    public List<Stop> getShortestPathAsStops(final Stop from, final Stop to) {
+
+    /**
+     * Given any two stations by name, 
+     * list the stops you would travel to get from one to the other.
+     * Computed as the shortest path from point a to point b.
+     */    
+    public List<Stop> listStopsFrom(final String fromStation, final String toStation) {
+        GraphPath<Stop, RouteEdge> path=getGraphPath(stop(fromStation), stop(toStation));
+        return path.getVertexList();
+    }
+
+    /**
+     * Given any two stops, 
+     * list the stops you would travel to get from one to the other.
+     * Computed as the shortest path from point a to point b.
+     */    
+    public List<Stop> listStopsFrom(final Stop from, final Stop to) {
         GraphPath<Stop, RouteEdge> path=getGraphPath(from, to);
         return path.getVertexList();
     }
     
-    public List<Route> getShortestPathAsRoutes(final Stop from, final Stop to) {
+    /**
+     * Given any two stations, 
+     * list the rail routes you would travel to get from one to the other.
+     * Examples: 
+     *     Davis to Kendall -> Redline
+     *     Ashmont to Arlington -> Redline, Greenline 
+     */
+    public List<Route> listRoutesFrom(final String fromStation, final String toStation) {
+        return listRoutesFrom(stop(fromStation), stop(toStation));
+    }
+    
+    /**
+     * Given any two stops, 
+     * list the rail routes you would travel to get from one to the other.
+     */
+    public List<Route> listRoutesFrom(final Stop from, final Stop to) {
         final GraphPath<Stop, RouteEdge> path=getGraphPath(from, to);
         final List<Route> routes=Lists.newArrayList();
         Route prev=null;
@@ -241,6 +260,58 @@ public class SystemGraph {
             prev=next;                
         }
         return routes;
+    }
+    
+    public void printRoutesFrom(final PrintStream out, final String fromStation, final String toStation) {
+        Stop from=stop(fromStation);
+        Stop to=stop(toStation);
+        if (from==null) {
+            out.println("    Input error, station not found, fromStation="+fromStation);
+        }
+        if (to==null) {
+            out.println("    Input error, station not found, toStation="+toStation);
+        }
+        if (from==null || to==null) {
+            return;
+        }
+        printRoutesFrom(out, from, to);
+    }
+
+    public void printRoutesFrom(final PrintStream out, final Stop from, final Stop to) {
+        out.println("listing routes from "+from+" to "+to+" ... ");
+        if (!from.equals(to)) {
+            List<Route> path=listRoutesFrom(from, to);
+            out.println("    "+path);
+        }
+    }
+
+    public void printConnectingRoutes(final PrintStream out) {
+        //find all the stops that have more than one route
+        out.println("Q: Which rail routes are connected?");
+        out.println("A: {routeId} is connected to [{routeId_1}, ... , {routeId_N}]");
+        for(final Entry<Route,Collection<Route>> e : getRouteConnections().entrySet()) {
+            out.println("    "+e.getKey()+" is connected to "+e.getValue());
+        }
+        
+        out.println("A: There are {N} connections at {stop} : [{routeIds}]...");
+        for(final Stop stop : stops.values()) {
+            final Set<Route> routes=stop.getRoutes();
+            if (stop.getRoutes().size()>1) {
+                out.println("    There are "+routes.size()+" connections at stopId="+stop.getId()+", "+stop.getName()+" : "+routes);
+            }
+        }
+    }
+    
+    /**
+     * Walk through all pairs of stops (A to B).
+     * Print the routes to take to get from A to B.
+     */
+    public void printAllRoutesFromAllStops(final PrintStream out) { 
+        for(final Stop from : getStops()) {
+            for(final Stop to : getStops()) {
+                printRoutesFrom(out, from, to);
+            }
+        } 
     }
 
     /**

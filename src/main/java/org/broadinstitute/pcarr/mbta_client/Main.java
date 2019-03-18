@@ -7,10 +7,21 @@ import org.broadinstitute.pcarr.rest.RestClient;
 /**
  * MBTA client demo.
  * 
- * <pre>
-   Example curl commands
-   ---------------------
-   
+ * (1) List the "long name" for all subway routes.
+ * 
+ * (2) Write a program that writes these questions and their answers to the console:
+ *   Which rail route has the most stops? 
+ *   Which rail route has the fewest stops?  
+ *   Which rail routes are connected? List the stops that connect them.
+ * 
+ * (3) Given any two stops on the rail routes you listed for question 1, list the rail routes you would travel to get from one to the other
+ *   Examples: 
+ *      Davis to Kendall -> Redline
+ *      Ashmont to Arlington -> Redline, Greenline 
+ *   How you handle input, represent train routes and present output is your choice.
+ * 
+ * Example curl commands:
+ <pre>
    curl -X GET "https://api-v3.mbta.com/routes?sort=long_name&filter%5Btype%5D=filter%5Btype%5D%3D0%2C1" 
      -H "accept: application/vnd.api+json" 
      -H "x-api-key: ..."
@@ -21,29 +32,11 @@ import org.broadinstitute.pcarr.rest.RestClient;
      
    curl -X GET "https://api-v3.mbta.com/stops?filter%5Bdirection_id%5D=0&filter%5Broute%5D=Red" -H "accept: application/vnd.api+json"
  
- * </pre>
+ </pre>
  */
-public class Main 
-{
+public class Main {
 
-
-    /**
-     * (1) List the "long name" for all subway routes.
-     * 
-     * (2) Write a program that writes these questions and their answers to the console:
-     *   Which rail route has the most stops? 
-     *   Which rail route has the fewest stops?  
-     *   Which rail routes are connected? List the stops that connect them.
-     * 
-     * (3) Given any two stops on the rail routes you listed for question 1, list the rail routes you would travel to get from one to the other
-     *   Examples: 
-     *      Davis to Kendall -> Redline
-     *      Ashmont to Arlington -> Redline, Greenline 
-     *   How you handle input, represent train routes and present output is your choice
-     * 
-     */
-    public static void main( String[] args )
-    {
+    public static void main( String[] args ) {
         System.out.println( "--------------------" );
         System.out.println( "  mbta-client demo" );
         System.out.println( "--------------------" );
@@ -70,8 +63,14 @@ public class Main
         System.out.println("Q:  Which rail route has the fewest stops?");
         System.out.println("A: "+shortestRoute+", with "+shortestRoute.getStops().size()+" stops");
         
-        graph.printConnectingStops(System.out);
+        graph.printConnectingRoutes(System.out);
         System.out.println("");
         System.out.println("Done");
+        
+        // list the rail routes you would travel to get from one to the other ...
+        System.out.println();
+        System.out.println("List routes from stop {A} to stop {B} ...");
+        graph.printRoutesFrom(System.out, "Davis", "Kendall/MIT");
+        graph.printRoutesFrom(System.out, "Ashmont", "Arlington");
     }
 }
